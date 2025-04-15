@@ -82,27 +82,37 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    .upload-container button {
+    .upload-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #cameraBtn {
       background-color: #D6336C;
       color: white;
       border: none;
-      padding: 10px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 18px;
       cursor: pointer;
     }
     .progress-bar {
-      width: 100%;
-      background: #eee;
+      flex-grow: 1;
+      height: 14px;
+      background: #f3f3f3;
       border-radius: 20px;
-      margin-top: 10px;
+      overflow: hidden;
       display: none;
     }
     .progress {
-      height: 12px;
-      background: #D6336C;
+      height: 100%;
+      background: linear-gradient(to right, #ff4d88, #ff99cc);
       width: 0;
-      border-radius: 20px;
       transition: width 0.3s ease;
     }
     .hora {
@@ -134,20 +144,25 @@
         <button id="cameraBtn" title="Enviar foto da câmera">
           <i class="fas fa-camera"></i>
         </button>
-        <div class="progress-bar" id="progressBar"><div class="progress" id="progress"></div></div>
+        <div class="progress-bar" id="progressBar">
+          <div class="progress" id="progress"></div>
+        </div>
       </div>
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDfBpJ-5DhknC9QRdSj8O1ShdJwBiL8284",
       authDomain: "chat-ele-ela.firebaseapp.com",
       projectId: "chat-ele-ela",
-      storageBucket: "chat-ele-ela.firebasestorage.app",
+      storageBucket: "chat-ele-ela.appspot.com",
       messagingSenderId: "1019858101951",
       appId: "1:1019858101951:web:5fba5a102d67d9009c880a"
     };
+    firebase.initializeApp(firebaseConfig);
 
     const clientId = "9c2d72d1a0c3b0b";
     let usuario = localStorage.getItem("usuario");
@@ -205,6 +220,7 @@
         const progressBar = document.getElementById("progressBar");
         const progress = document.getElementById("progress");
         progressBar.style.display = "block";
+        progress.style.width = "0%";
 
         const form = new FormData();
         form.append("image", file);
@@ -224,14 +240,18 @@
           progressBar.style.display = "none";
           const response = JSON.parse(xhr.responseText);
           const imageUrl = response.data.link;
+          const db = firebase.firestore();
           await db.collection("chat").add({ usuario, imagemUrl: imageUrl, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        };
+
+        xhr.onerror = function () {
+          alert("Erro no upload da imagem. Tente novamente.");
+          progressBar.style.display = "none";
         };
 
         xhr.send(form);
       };
     }
   </script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </body>
 </html>
