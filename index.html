@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Ele & Ela</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; }
+    #login, #chat { display: none; }
+    .message { margin: 5px 0; padding: 5px; border-radius: 5px; }
+    .ele { background: #d0ebff; text-align: left; }
+    .ela { background: #ffe0f0; text-align: right; }
+    img { max-width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <div id="login">
+    <h2>Digite sua senha</h2>
+    <input type="password" id="senha" placeholder="Senha...">
+    <button onclick="login()">Entrar</button>
+  </div>
+
+  <div id="chat">
+    <h2>Chat</h2>
+    <div id="messages"></div>
+    <input id="msg" placeholder="Digite sua mensagem...">
+    <button onclick="sendMessage()">Enviar</button>
+    <br><br>
+    <input type="file" accept="image/*" capture="environment" onchange="sendImage(this)">
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDfBpJ-5DhknC9QRdSj8O1ShdJwBiL8284",
+      authDomain: "chat-ele-ela.firebaseapp.com",
+      projectId: "chat-ele-ela",
+      storageBucket: "chat-ele-ela.firebasestorage.app",
+      messagingSenderId: "1019858101951",
+      appId: "1:1019858101951:web:5fba5a102d67d9009c880a"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    firebase.auth().signInAnonymously().catch(console.error);
+
+    let user = "";
+
+    function login() {
+      const senha = document.getElementById("senha").value;
+      if (senha === "14141516") user = "ele";
+      else if (senha === "170125") user = "ela";
+      else if (senha === "4444") {
+        window.location.href = "https://blaze.bet.br/";
+        return;
+      } else {
+        alert("Senha inválida");
+        return;
+      }
+      document.getElementById("login").style.display = "none";
+      document.getElementById("chat").style.display = "block";
+      listenMessages();
+    }
+
+    function sendMessage() {
+      const msg = document.getElementById("msg").value;
+      if (msg.trim() === "") return;
+      db.ref("messages").push({ user, type: "text", content: msg, timestamp: Date.now() });
+      document.getElementById("msg").value = "";
+    }
+
+    function listenMessages() {
+      db.ref("messages").on("child_added", (snap) => {
+        const msg = snap.val();
+        const div = document.createElement("div");
+        div.className = `message ${msg.user}`;
+        if (msg.type === "text") {
+          div.innerText = msg.content;
+        } else if (msg.type === "image") {
+          const img = document.createElement("img");
+          img.src = msg.content;
+          div.appendChild(img);
+        }
+        document.getElementById("messages").appendChild(div);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+    }
+
+    const IMGUR_CLIENT_ID = "9c2d72d1a0c3b0b";
+
+    function sendImage(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onloadend = function () {
+        const base64 = reader.result.split(',')[1];
+
+        fetch("https://api.imgur.com/3/image", {
+          method: "POST",
+          headers: {
+            Authorization: "Client-ID " + IMGUR_CLIENT_ID,
+            Accept: "application/json"
+          },
+          body: new URLSearchParams({
+            image: base64,
+            type: "base64"
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          const imageUrl = data.data.link;
+          db.ref("messages").push({
+            user,
+            type: "image",
+            content: imageUrl,
+            timestamp: Date.now()
+          });
+        })
+        .catch(err => {
+          console.error("Erro ao enviar imagem:", err);
+          alert("Erro ao enviar imagem");
+        });
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById("login").style.display = "block";
+  </script>
+</body>
+</html>
