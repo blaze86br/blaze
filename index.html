@@ -141,8 +141,8 @@
     }
     emoji-picker {
       position: absolute;
-      bottom: 60px;
-      left: 10px;
+      bottom: 80px;
+      left: 20px;
       z-index: 100;
       display: none;
     }
@@ -155,16 +155,41 @@
   </style>
 </head>
 <body>
-  <div class="chat-input-wrapper">
-    <label for="imageInput" id="cameraBtn"><i class="fas fa-camera"></i></label>
-    <input type="file" id="imageInput" accept="image/*">
-    <input type="text" id="chatInput" placeholder="Escreva uma mensagem...">
-    <button id="emojiBtn"><i class="far fa-smile"></i></button>
-    <button id="enviarBtn">Enviar</button>
-    <emoji-picker id="emojiPicker"></emoji-picker>
+  <div class="login-box" id="loginBox">
+    <div class="login-overlay">
+      <h2>Entrar no Chat</h2>
+      <input type="password" id="senhaInput" placeholder="Digite a senha" />
+      <br />
+      <button onclick="entrarChat()">Entrar</button>
+    </div>
+  </div>
+
+  <div class="container" id="chatContainer">
+    <div class="chat-mensajes" id="chatMensagens"></div>
+    <div class="progress-bar" id="progressBar">
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="chat-input-wrapper">
+      <label for="imageInput" id="cameraBtn"><i class="fas fa-camera"></i></label>
+      <input type="file" id="imageInput" accept="image/*">
+      <input type="text" id="chatInput" placeholder="Escreva uma mensagem...">
+      <button id="emojiBtn"><i class="far fa-smile"></i></button>
+      <button id="enviarBtn">Enviar</button>
+      <emoji-picker id="emojiPicker"></emoji-picker>
+    </div>
   </div>
 
   <script>
+    function entrarChat() {
+      const senha = document.getElementById('senhaInput').value;
+      if (senha === '1234') { // você pode ajustar a senha aqui
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('chatContainer').style.display = 'block';
+      } else {
+        alert('Senha incorreta');
+      }
+    }
+
     const emojiBtn = document.getElementById('emojiBtn');
     const emojiPicker = document.getElementById('emojiPicker');
     const chatInput = document.getElementById('chatInput');
