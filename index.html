@@ -14,10 +14,6 @@
       font-family: 'Quicksand', sans-serif;
       background: linear-gradient(to right, #ffe6e6, #ffe6f0);
     }
-    body.fundoAtivo {
-      background: url('background.png') no-repeat center center fixed;
-      background-size: cover;
-    }
     .login-box {
       background-image: url('background_login.png');
       background-size: cover;
@@ -71,10 +67,6 @@
       display: flex;
       flex-direction: column;
     }
-    .chat {
-      display: flex;
-      flex-direction: column;
-    }
     .chat-input-wrapper {
       position: relative;
       display: flex;
@@ -82,16 +74,16 @@
     }
     #chatInput {
       width: 100%;
-      padding: 10px 100px 10px 10px;
+      padding: 10px 90px 10px 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
     }
-    #cameraBtn, #emojiBtn {
+    #emojiBtn, #cameraBtn {
       position: absolute;
       background: transparent;
       border: none;
       color: #D6336C;
-      font-size: 20px;
+      font-size: 18px;
       cursor: pointer;
     }
     #emojiBtn {
@@ -167,7 +159,6 @@
     <div class="login-overlay">
       <i class="fas fa-heart"></i>
       <h2>Entrar no Chat</h2>
-      <input type="text" id="usuario" placeholder="Usuário (Ele ou Ela)" />
       <input type="password" id="senha" placeholder="Senha" />
       <button onclick="entrarNoChat()">Entrar</button>
     </div>
@@ -190,44 +181,34 @@
   <script>
     const loginBox = document.getElementById('loginBox');
     const chatContainer = document.getElementById('chatContainer');
-    const usuarioInput = document.getElementById('usuario');
     const senhaInput = document.getElementById('senha');
     const chatMensajes = document.getElementById('chatMensajes');
     const chatInput = document.getElementById('chatInput');
     const emojiBtn = document.getElementById('emojiBtn');
     const emojiPicker = document.getElementById('emojiPicker');
 
+    let usuario = "";
+
     function entrarNoChat() {
-      const usuario = usuarioInput.value.trim();
       const senha = senhaInput.value.trim();
-      if ((usuario === "Ele" || usuario === "Ela") && senha === "1234") {
+      if (senha === "1234") {
+        usuario = prompt("Você é Ele ou Ela?");
+        if (usuario !== "Ele" && usuario !== "Ela") {
+          alert("Digite apenas 'Ele' ou 'Ela'");
+          return;
+        }
         loginBox.style.display = "none";
         chatContainer.style.display = "block";
       } else {
-        alert("Usuário ou senha incorretos");
+        alert("Senha incorreta");
       }
     }
 
-    const db = {
-      collection: () => ({
-        orderBy: () => ({
-          onSnapshot: (callback) => {
-            const mensagens = [
-              { usuario: "Ele", mensagem: "Oi amor!", timestamp: new Date() },
-              { usuario: "Ela", mensagem: "Oi vida! ❤️", timestamp: new Date() },
-            ];
-            callback({
-              forEach: (fn) => mensagens.forEach((m) => fn({ data: () => m }))
-            });
-          }
-        })
-      })
-    };
+    const mensagensSalvas = [];
 
-    db.collection("chat").orderBy("timestamp").onSnapshot((snapshot) => {
+    function renderizarMensagens() {
       chatMensajes.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const data = doc.data();
+      mensagensSalvas.forEach(data => {
         const timestamp = data.timestamp;
         const hora = timestamp?.toLocaleTimeString().slice(0,5) || "⏳";
         const dataFormatada = timestamp?.toLocaleDateString() || "📅";
@@ -243,18 +224,19 @@
         chatMensajes.appendChild(msg);
       });
       chatMensajes.scrollTop = chatMensajes.scrollHeight;
-    });
+    }
 
     function enviarMensagem() {
       const texto = chatInput.value.trim();
       if (texto === "") return;
       const novaMensagem = {
-        usuario: usuarioInput.value.trim(),
+        usuario: usuario,
         mensagem: texto,
         timestamp: new Date()
       };
-      console.log("Mensagem enviada:", novaMensagem);
+      mensagensSalvas.push(novaMensagem);
       chatInput.value = "";
+      renderizarMensagens();
     }
 
     emojiBtn.onclick = () => {
