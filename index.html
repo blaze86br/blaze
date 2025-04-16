@@ -10,7 +10,128 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
-    /* (Estilos mantidos iguais) */
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: #ffeef3;
+      margin: 0;
+      padding: 0;
+    }
+    .login-box {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #fff0f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-overlay {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255, 0, 102, 0.2);
+      text-align: center;
+    }
+    .login-overlay input {
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      width: 200px;
+    }
+    .login-overlay button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #d6336c;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .container {
+      display: none;
+      max-width: 600px;
+      margin: 50px auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255, 0, 102, 0.1);
+      padding: 20px;
+    }
+    .chat-mensajes {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .mensagem {
+      max-width: 70%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 15px;
+      position: relative;
+      clear: both;
+    }
+    .mensagem.ele {
+      background: #f0f0f0;
+      float: left;
+      border-bottom-left-radius: 0;
+    }
+    .mensagem.ela {
+      background: #ffd5e3;
+      float: right;
+      border-bottom-right-radius: 0;
+    }
+    .mensagem img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+    .hora {
+      font-size: 0.75em;
+      color: gray;
+      margin-top: 5px;
+      text-align: right;
+    }
+    .chat-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #chatInput {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+    #emojiBtn, #cameraBtn, #enviarBtn {
+      background: #d6336c;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .progress-bar {
+      height: 5px;
+      width: 100%;
+      background: #ffeef3;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: #d6336c;
+      transition: width 0.3s;
+    }
+    emoji-picker {
+      position: absolute;
+      bottom: 70px;
+      left: 10px;
+      z-index: 100;
+      display: none;
+    }
     input[type="file"] {
       display: none;
     }
@@ -19,7 +140,6 @@
 <body>
   <div class="login-box" id="loginBox">
     <div class="login-overlay">
-      <i class="fas fa-heart"></i>
       <h2>Entrar no Chat</h2>
       <input type="password" id="senha" placeholder="Senha" onkeydown="if(event.key==='Enter') entrarNoChat()" />
       <button onclick="entrarNoChat()">Entrar</button>
@@ -35,7 +155,7 @@
         <button id="emojiBtn"><i class="far fa-smile"></i></button>
         <button id="cameraBtn"><i class="fas fa-camera"></i></button>
         <input type="file" id="fileInput" accept="image/*">
-        <button id="enviarBtn" onclick="enviarMensagem()">Enviar</button>
+        <button id="enviarBtn" onclick="enviarMensagem()"><i class="fas fa-paper-plane"></i></button>
         <emoji-picker id="emojiPicker"></emoji-picker>
       </div>
     </div>
