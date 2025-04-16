@@ -94,17 +94,18 @@
     .chat-input-wrapper {
       display: flex;
       align-items: center;
-      gap: 8px;
-      position: relative;
       padding: 10px;
       background: white;
       border-top: 1px solid #ddd;
+      gap: 8px;
+      flex-wrap: nowrap;
     }
     #chatInput {
       flex: 1;
       padding: 10px 15px;
       border-radius: 20px;
       border: 1px solid #ccc;
+      min-width: 0;
     }
     #emojiBtn, #cameraBtn, #enviarBtn {
       background: #d6336c;
@@ -118,6 +119,7 @@
       justify-content: center;
       width: 40px;
       height: 40px;
+      flex-shrink: 0;
     }
     #cameraBtn i, #emojiBtn i {
       font-size: 18px;
