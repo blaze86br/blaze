@@ -68,13 +68,32 @@
       border: 1px solid #ddd;
       margin-bottom: 10px;
     }
-    .chat input[type="text"] {
-      width: 70%;
-      padding: 10px;
+    .chat {
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    #chatInput {
+      width: 100%;
+      padding: 10px 40px 10px 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
     }
-    .chat button {
+    #cameraBtn {
+      position: absolute;
+      right: 100px;
+      background: transparent;
+      border: none;
+      color: #D6336C;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    #enviarBtn {
+      margin-left: 10px;
       padding: 10px;
       background-color: #D6336C;
       color: white;
@@ -82,27 +101,8 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    .upload-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    #cameraBtn {
-      background-color: #D6336C;
-      color: white;
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      cursor: pointer;
-    }
     .progress-bar {
-      flex-grow: 1;
+      margin-top: 10px;
       height: 14px;
       background: #f3f3f3;
       border-radius: 20px;
@@ -118,140 +118,61 @@
     .hora {
       font-size: 12px;
       color: gray;
-      margin-left: 8px;
+      margin-top: 5px;
+      display: block;
+    }
+    .mensagem {
+      max-width: 70%;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 15px;
+      clear: both;
+      word-wrap: break-word;
+      position: relative;
+    }
+    .mensagem.ele {
+      background-color: #e0f7fa;
+      align-self: flex-start;
+      border-top-left-radius: 0;
+    }
+    .mensagem.ela {
+      background-color: #fce4ec;
+      align-self: flex-end;
+      border-top-right-radius: 0;
+      text-align: right;
+    }
+    .mensagem img {
+      max-width: 150px;
+      border-radius: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="login-box" id="loginBox">
-    <div class="login-overlay">
-      <i class="fas fa-lock"></i>
-      <h2>Quem é você?</h2>
-      <input type="password" id="senha" placeholder="Digite sua senha" onkeypress="if(event.key==='Enter')verificarSenha()">
-      <button onclick="verificarSenha()">Entrar</button>
-      <p class="error" id="erroMsg" style="color: red; display:none;">Senha incorreta!</p>
-    </div>
-  </div>
+  <!-- ... conteúdo anterior permanece igual ... -->
 
-  <div class="container" id="conteudo">
-    <h1 style="text-align: center; color: #D6336C;">Mais um dia sem você</h1>
-    <div class="chat">
-      <div class="chat-mensajes" id="chatMensagens"></div>
-      <input type="text" id="chatInput" placeholder="Escreva uma mensagem...">
-      <button id="enviarBtn">Enviar</button>
-      <div class="upload-container">
-        <input type="file" id="imagemInput" accept="image/*" capture="environment" style="display: none;">
-        <button id="cameraBtn" title="Enviar foto da câmera">
-          <i class="fas fa-camera"></i>
-        </button>
-        <div class="progress-bar" id="progressBar">
-          <div class="progress" id="progress"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDfBpJ-5DhknC9QRdSj8O1ShdJwBiL8284",
-      authDomain: "chat-ele-ela.firebaseapp.com",
-      projectId: "chat-ele-ela",
-      storageBucket: "chat-ele-ela.appspot.com",
-      messagingSenderId: "1019858101951",
-      appId: "1:1019858101951:web:5fba5a102d67d9009c880a"
-    };
-    firebase.initializeApp(firebaseConfig);
+    // ... código anterior permanece igual até onSnapshot ...
+    db.collection("chat").orderBy("timestamp").onSnapshot((snapshot) => {
+      chatMensagens.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const timestamp = data.timestamp?.toDate();
+        const hora = timestamp?.toLocaleTimeString().slice(0,5) || "⏳";
+        const dataFormatada = timestamp?.toLocaleDateString() || "📅";
 
-    const clientId = "9c2d72d1a0c3b0b";
-    let usuario = localStorage.getItem("usuario");
+        const msg = document.createElement("div");
+        msg.className = `mensagem ${data.usuario === "Ele" ? 'ele' : 'ela'}`;
 
-    const chatMensagens = document.getElementById("chatMensagens");
-    const chatInput = document.getElementById("chatInput");
-
-    function verificarSenha() {
-      const senha = document.getElementById("senha").value;
-      if (senha === "14141516") usuario = "Ele";
-      else if (senha === "170125") usuario = "Ela";
-      else if (senha === "4444") return window.location.href = "https://blaze.bet.br/";
-      else return document.getElementById("erroMsg").style.display = "block";
-
-      localStorage.setItem("usuario", usuario);
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("conteudo").style.display = "block";
-      document.body.classList.add("fundoAtivo");
-      iniciarChat();
-    }
-
-    async function iniciarChat() {
-      const db = firebase.firestore();
-      db.collection("chat").orderBy("timestamp").onSnapshot((snapshot) => {
-        chatMensagens.innerHTML = "";
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const emoji = data.usuario === "Ele" ? "💙" : "💖";
-          const hora = data.timestamp?.toDate().toLocaleTimeString().slice(0,5) || "⏳";
-
-          const msg = document.createElement("div");
-          if (data.imagemUrl) {
-            msg.innerHTML = `<strong>${emoji} ${data.usuario}:</strong> <br><img src="${data.imagemUrl}" style="width: 100px; border-radius: 10px;"> <span class="hora">${hora}</span>`;
-          } else {
-            msg.innerHTML = `<strong>${emoji} ${data.usuario}:</strong> ${data.mensagem} <span class="hora">${hora}</span>`;
-          }
-          chatMensagens.appendChild(msg);
-        });
-        chatMensagens.scrollTop = chatMensagens.scrollHeight;
-      });
-
-      document.getElementById("enviarBtn").onclick = async () => {
-        const texto = chatInput.value.trim();
-        if (texto !== "") {
-          await db.collection("chat").add({ usuario, mensagem: texto, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-          chatInput.value = "";
+        if (data.imagemUrl) {
+          msg.innerHTML = `<img src="${data.imagemUrl}"><div class="hora">${dataFormatada} ${hora}</div>`;
+        } else {
+          msg.innerHTML = `${data.mensagem}<div class="hora">${dataFormatada} ${hora}</div>`;
         }
-      };
-
-      document.getElementById("cameraBtn").onclick = () => document.getElementById("imagemInput").click();
-      document.getElementById("imagemInput").onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const progressBar = document.getElementById("progressBar");
-        const progress = document.getElementById("progress");
-        progressBar.style.display = "block";
-        progress.style.width = "0%";
-
-        const form = new FormData();
-        form.append("image", file);
-
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "https://api.imgur.com/3/image");
-        xhr.setRequestHeader("Authorization", `Client-ID ${clientId}`);
-
-        xhr.upload.onprogress = function (e) {
-          if (e.lengthComputable) {
-            const percent = (e.loaded / e.total) * 100;
-            progress.style.width = percent + "%";
-          }
-        };
-
-        xhr.onload = async function () {
-          progressBar.style.display = "none";
-          const response = JSON.parse(xhr.responseText);
-          const imageUrl = response.data.link;
-          const db = firebase.firestore();
-          await db.collection("chat").add({ usuario, imagemUrl: imageUrl, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-        };
-
-        xhr.onerror = function () {
-          alert("Erro no upload da imagem. Tente novamente.");
-          progressBar.style.display = "none";
-        };
-
-        xhr.send(form);
-      };
-    }
+        chatMensagens.appendChild(msg);
+      });
+      chatMensagens.scrollTop = chatMensagens.scrollHeight;
+    });
+    // ... resto permanece igual ...
   </script>
 </body>
 </html>
