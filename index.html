@@ -6,6 +6,7 @@
   <title>Chat Ele & Ela</title>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/a2d0b5d6d3.js" crossorigin="anonymous"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -67,6 +68,8 @@
       border-radius: 10px;
       border: 1px solid #ddd;
       margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
     }
     .chat {
       display: flex;
@@ -79,18 +82,23 @@
     }
     #chatInput {
       width: 100%;
-      padding: 10px 40px 10px 10px;
+      padding: 10px 100px 10px 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
     }
-    #cameraBtn {
+    #cameraBtn, #emojiBtn {
       position: absolute;
-      right: 100px;
       background: transparent;
       border: none;
       color: #D6336C;
       font-size: 20px;
       cursor: pointer;
+    }
+    #emojiBtn {
+      right: 60px;
+    }
+    #cameraBtn {
+      right: 30px;
     }
     #enviarBtn {
       margin-left: 10px;
@@ -126,9 +134,9 @@
       margin: 8px 0;
       padding: 10px;
       border-radius: 15px;
-      clear: both;
       word-wrap: break-word;
       position: relative;
+      display: inline-block;
     }
     .mensagem.ele {
       background-color: #e0f7fa;
@@ -145,18 +153,82 @@
       max-width: 150px;
       border-radius: 10px;
     }
+    emoji-picker {
+      position: absolute;
+      bottom: 50px;
+      right: 90px;
+      z-index: 100;
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <!-- ... conteúdo anterior permanece igual ... -->
+  <div class="login-box" id="loginBox">
+    <div class="login-overlay">
+      <i class="fas fa-heart"></i>
+      <h2>Entrar no Chat</h2>
+      <input type="text" id="usuario" placeholder="Usuário (Ele ou Ela)" />
+      <input type="password" id="senha" placeholder="Senha" />
+      <button onclick="entrarNoChat()">Entrar</button>
+    </div>
+  </div>
+  <div class="container" id="chatContainer">
+    <h2 style="text-align:center;color:#D6336C">Mais um dia sem você</h2>
+    <div class="chat-mensajes" id="chatMensajes"></div>
+    <div class="progress-bar" id="progressBar"><div class="progress" id="progress"></div></div>
+    <div class="chat">
+      <div class="chat-input-wrapper">
+        <input type="text" id="chatInput" placeholder="Escreva uma mensagem..." onkeydown="if(event.key==='Enter') enviarMensagem()">
+        <button id="emojiBtn"><i class="far fa-smile"></i></button>
+        <button id="cameraBtn"><i class="fas fa-camera"></i></button>
+        <button id="enviarBtn" onclick="enviarMensagem()">Enviar</button>
+        <emoji-picker id="emojiPicker"></emoji-picker>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // ... código anterior permanece igual até onSnapshot ...
+    const loginBox = document.getElementById('loginBox');
+    const chatContainer = document.getElementById('chatContainer');
+    const usuarioInput = document.getElementById('usuario');
+    const senhaInput = document.getElementById('senha');
+    const chatMensajes = document.getElementById('chatMensajes');
+    const chatInput = document.getElementById('chatInput');
+    const emojiBtn = document.getElementById('emojiBtn');
+    const emojiPicker = document.getElementById('emojiPicker');
+
+    function entrarNoChat() {
+      const usuario = usuarioInput.value.trim();
+      const senha = senhaInput.value.trim();
+      if ((usuario === "Ele" || usuario === "Ela") && senha === "1234") {
+        loginBox.style.display = "none";
+        chatContainer.style.display = "block";
+      } else {
+        alert("Usuário ou senha incorretos");
+      }
+    }
+
+    const db = {
+      collection: () => ({
+        orderBy: () => ({
+          onSnapshot: (callback) => {
+            const mensagens = [
+              { usuario: "Ele", mensagem: "Oi amor!", timestamp: new Date() },
+              { usuario: "Ela", mensagem: "Oi vida! ❤️", timestamp: new Date() },
+            ];
+            callback({
+              forEach: (fn) => mensagens.forEach((m) => fn({ data: () => m }))
+            });
+          }
+        })
+      })
+    };
+
     db.collection("chat").orderBy("timestamp").onSnapshot((snapshot) => {
-      chatMensagens.innerHTML = "";
+      chatMensajes.innerHTML = "";
       snapshot.forEach((doc) => {
         const data = doc.data();
-        const timestamp = data.timestamp?.toDate();
+        const timestamp = data.timestamp;
         const hora = timestamp?.toLocaleTimeString().slice(0,5) || "⏳";
         const dataFormatada = timestamp?.toLocaleDateString() || "📅";
 
@@ -168,11 +240,38 @@
         } else {
           msg.innerHTML = `${data.mensagem}<div class="hora">${dataFormatada} ${hora}</div>`;
         }
-        chatMensagens.appendChild(msg);
+        chatMensajes.appendChild(msg);
       });
-      chatMensagens.scrollTop = chatMensagens.scrollHeight;
+      chatMensajes.scrollTop = chatMensajes.scrollHeight;
     });
-    // ... resto permanece igual ...
+
+    function enviarMensagem() {
+      const texto = chatInput.value.trim();
+      if (texto === "") return;
+      const novaMensagem = {
+        usuario: usuarioInput.value.trim(),
+        mensagem: texto,
+        timestamp: new Date()
+      };
+      console.log("Mensagem enviada:", novaMensagem);
+      chatInput.value = "";
+    }
+
+    emojiBtn.onclick = () => {
+      emojiPicker.style.display = emojiPicker.style.display === 'block' ? 'none' : 'block';
+    };
+
+    emojiPicker.addEventListener('emoji-click', event => {
+      chatInput.value += event.detail.unicode;
+      chatInput.focus();
+      emojiPicker.style.display = 'none';
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!emojiPicker.contains(e.target) && e.target !== emojiBtn && !emojiBtn.contains(e.target)) {
+        emojiPicker.style.display = 'none';
+      }
+    });
   </script>
 </body>
 </html>
