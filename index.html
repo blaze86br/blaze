@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chat Ele & Ela</title>
+  <title>Blaze</title>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/a2d0b5d6d3.js" crossorigin="anonymous"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
@@ -70,36 +69,35 @@
       flex-direction: column;
     }
     .chat-input-wrapper {
-      position: relative;
       display: flex;
       align-items: center;
+      gap: 10px;
     }
     #chatInput {
-      width: 100%;
-      padding: 10px 90px 10px 10px;
+      flex: 1;
+      padding: 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
     }
-    #emojiBtn, #cameraBtn {
-      position: absolute;
-      background: transparent;
-      border: none;
+    #fotoBtn {
+      background: #ffe6f0;
+      border: 2px solid #D6336C;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      color: #D6336C;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #fotoBtn i {
       color: #D6336C;
       font-size: 18px;
-      cursor: pointer;
-    }
-    #emojiBtn {
-      right: 60px;
-    }
-    #cameraBtn {
-      right: 30px;
-    }
-    #cameraBtn i, #emojiBtn i {
-      font-size: 20px;
     }
     #enviarBtn {
-      margin-left: 10px;
-      padding: 10px;
+      padding: 10px 15px;
       background-color: #D6336C;
       color: white;
       border: none;
@@ -156,20 +154,13 @@
       max-width: 150px;
       border-radius: 10px;
     }
-    emoji-picker {
-      position: absolute;
-      bottom: 50px;
-      right: 90px;
-      z-index: 100;
-      display: none;
-    }
   </style>
 </head>
 <body>
   <div class="login-box" id="loginBox">
     <div class="login-overlay">
       <i class="fas fa-heart"></i>
-      <h2>Entrar no Chat</h2>
+      <h2>Autenticação</h2>
       <input type="password" id="senha" placeholder="Senha" onkeydown="if(event.key==='Enter') entrarNoChat()" />
       <button onclick="entrarNoChat()">Entrar</button>
     </div>
@@ -181,10 +172,9 @@
     <div class="chat">
       <div class="chat-input-wrapper">
         <input type="text" id="chatInput" placeholder="Escreva uma mensagem..." onkeydown="if(event.key==='Enter') enviarMensagem()">
-        <button id="emojiBtn"><i class="far fa-smile"></i></button>
-        <button id="cameraBtn"><i class="fas fa-camera"></i></button>
+        <button id="fotoBtn" onclick="document.getElementById('fileInput').click()"><i class="fas fa-camera"></i></button>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadFoto(this)">
         <button id="enviarBtn" onclick="enviarMensagem()">Enviar</button>
-        <emoji-picker id="emojiPicker"></emoji-picker>
       </div>
     </div>
   </div>
@@ -206,8 +196,8 @@
     const senhaInput = document.getElementById('senha');
     const chatMensajes = document.getElementById('chatMensajes');
     const chatInput = document.getElementById('chatInput');
-    const emojiBtn = document.getElementById('emojiBtn');
-    const emojiPicker = document.getElementById('emojiPicker');
+    const progressBar = document.getElementById('progressBar');
+    const progress = document.getElementById('progress');
 
     let usuario = "";
 
@@ -258,21 +248,49 @@
       chatInput.value = "";
     }
 
-    emojiBtn.onclick = () => {
-      emojiPicker.style.display = emojiPicker.style.display === 'block' ? 'none' : 'block';
-    };
+    async function uploadFoto(input) {
+      const file = input.files[0];
+      if (!file) return;
 
-    emojiPicker.addEventListener('emoji-click', event => {
-      chatInput.value += event.detail.unicode;
-      chatInput.focus();
-      emojiPicker.style.display = 'none';
-    });
+      const formData = new FormData();
+      formData.append("image", file);
 
-    document.addEventListener('click', (e) => {
-      if (!emojiPicker.contains(e.target) && e.target !== emojiBtn && !emojiBtn.contains(e.target)) {
-        emojiPicker.style.display = 'none';
-      }
-    });
+      progressBar.style.display = 'block';
+      progress.style.width = '0%';
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "https://api.imgur.com/3/image");
+      xhr.setRequestHeader("Authorization", "Client-ID 9c2d72d1a0c3b0b");
+
+      xhr.upload.onprogress = function (event) {
+        if (event.lengthComputable) {
+          const percent = (event.loaded / event.total) * 100;
+          progress.style.width = percent + "%";
+        }
+      };
+
+      xhr.onload = function () {
+        progressBar.style.display = 'none';
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          const novaMensagem = {
+            usuario: usuario,
+            imagemUrl: response.data.link,
+            timestamp: Date.now()
+          };
+          db.ref("mensagens").push(novaMensagem);
+        } else {
+          alert("Erro ao enviar imagem.");
+        }
+      };
+
+      xhr.onerror = function () {
+        progressBar.style.display = 'none';
+        alert("Erro ao conectar com o Imgur.");
+      };
+
+      xhr.send(formData);
+    }
   </script>
 </body>
 </html>
