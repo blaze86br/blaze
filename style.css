@@ -71,6 +71,7 @@ body {
   margin-bottom: 10px;
   display: flex;
   flex-direction: column;
+  font-family: 'Roboto', sans-serif;  /* Alterei a fonte do chat para "Roboto" */
 }
 .chat-input-wrapper {
   display: flex;
