@@ -3,26 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blaze</title>
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet" />
+  <title>Blaze Apostas Online | Blaze Jogo | Crash & Double | Blaze</title>
+  <link rel="shortcut icon" href="https://blaze.bet.br/favicon.ico" type="image/x-icon" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/a2d0b5d6d3.js" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="login-blaze" id="loginBox">
+  <div class="login-screen">
     <div class="login-box-blaze">
-      <div class="login-header">
-        <img src="https://blaze.bet/_next/static/media/logo.09778f36.svg" alt="Logo" />
-        <h2>Entrar</h2>
-      </div>
+      <img src="https://blaze.bet.br/static/media/logo.cf45d2ad.svg" alt="Logo" class="logo-blaze" />
       <input type="password" id="senha" placeholder="Senha" onkeydown="if(event.key==='Enter') entrarNoChat()" />
       <button onclick="entrarNoChat()">Entrar</button>
     </div>
   </div>
 
-  <div class="container" id="chatContainer">
+  <div class="container" id="chatContainer" style="display: none;">
     <h2 style="text-align:center;color:#D6336C">Um dia mais perto de te ver</h2>
     <div class="chat-mensajes" id="chatMensajes"></div>
     <div class="progress-bar" id="progressBar"><div class="progress" id="progress"></div></div>
@@ -36,7 +34,6 @@
     </div>
   </div>
 
-  <!-- Popup de imagem -->
   <div id="popupImagem" onclick="fecharPopup()">
     <div id="popupConteudo" onclick="event.stopPropagation()">
       <span id="fecharBtn" onclick="fecharPopup()">&times;</span>
@@ -56,13 +53,14 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const loginBox = document.getElementById('loginBox');
+    const loginScreen = document.querySelector('.login-screen');
     const chatContainer = document.getElementById('chatContainer');
     const senhaInput = document.getElementById('senha');
     const chatMensajes = document.getElementById('chatMensajes');
     const chatInput = document.getElementById('chatInput');
     const progressBar = document.getElementById('progressBar');
     const progress = document.getElementById('progress');
+    let usuario = "";
 
     function entrarNoChat() {
       const senha = senhaInput.value.trim();
@@ -71,7 +69,7 @@
       else if (senha === "4444") return window.location.href = "https://blaze.com";
       else return alert("Senha incorreta");
 
-      loginBox.style.display = "none";
+      loginScreen.style.display = "none";
       chatContainer.style.display = "block";
       carregarMensagens();
     }
@@ -84,8 +82,10 @@
         lista.forEach(data => {
           const hora = new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
           const dataFormatada = new Date(data.timestamp).toLocaleDateString();
+
           const msg = document.createElement("div");
           msg.className = `mensagem ${data.usuario === "Ele" ? 'ele' : 'ela'}`;
+
           if (data.imagemUrl) {
             msg.innerHTML = `<img src="${data.imagemUrl}" onclick="abrirPopup('${data.imagemUrl}')"><div class="hora">${dataFormatada} ${hora}</div>`;
           } else {
@@ -112,19 +112,24 @@
     async function uploadFoto(input) {
       const file = input.files[0];
       if (!file) return;
+
       const formData = new FormData();
       formData.append("image", file);
+
       progressBar.style.display = 'block';
       progress.style.width = '0%';
+
       const xhr = new XMLHttpRequest();
       xhr.open("POST", "https://api.imgur.com/3/image");
       xhr.setRequestHeader("Authorization", "Client-ID 9c2d72d1a0c3b0b");
+
       xhr.upload.onprogress = function (event) {
         if (event.lengthComputable) {
           const percent = (event.loaded / event.total) * 100;
           progress.style.width = percent + "%";
         }
       };
+
       xhr.onload = function () {
         progressBar.style.display = 'none';
         const response = JSON.parse(xhr.responseText);
@@ -139,10 +144,12 @@
           alert("Erro ao enviar imagem.");
         }
       };
+
       xhr.onerror = function () {
         progressBar.style.display = 'none';
         alert("Erro ao conectar com o Imgur.");
       };
+
       xhr.send(formData);
     }
 
@@ -154,8 +161,6 @@
     function fecharPopup() {
       document.getElementById('popupImagem').style.display = 'none';
     }
-
-    let usuario = "";
   </script>
 </body>
 </html>
