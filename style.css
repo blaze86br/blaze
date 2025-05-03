@@ -11,13 +11,13 @@ body {
 .login-screen {
   width: 100%;
   height: 100vh;
-  background-color: #0f1923;
+  background-color: #0f0f0f;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .login-box-blaze {
-  background-color: #1a242d;
+  background-color: #1a1a1a;
   padding: 40px 30px;
   border-radius: 8px;
   width: 90%;
@@ -71,8 +71,8 @@ body {
   margin-bottom: 10px;
   display: flex;
   flex-direction: column;
-  font-family: 'Roboto', sans-serif;  /* Fonte do chat */
-  color: #333; /* Cor da fonte ajustada para um cinza mais suave */
+  font-family: 'Roboto', sans-serif;  /* Alterei a fonte do chat para "Roboto" */
+  color: #333;
 }
 .chat-input-wrapper {
   display: flex;
