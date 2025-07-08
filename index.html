@@ -56,7 +56,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- Variáveis Globais ---
         const loginScreen = document.querySelector('.login-screen'), chatContainer = document.getElementById('chatContainer'), senhaInput = document.getElementById('senha'), chatMensajes = document.getElementById('chatMensajes'), chatInput = document.getElementById('chatInput'), typingIndicator = document.getElementById('typing-indicator'), replyingBanner = document.getElementById('replying-banner'), reactionPicker = document.getElementById('reaction-picker'), progressBar = document.getElementById('progressBar'), progress = document.getElementById('progress');
         let usuario = "", otherUser = "", typingTimeout;
         let messagesCache = {};
@@ -79,15 +78,26 @@
             db.ref("mensagens").orderByChild("timestamp").on("value", snapshot => {
                 chatMensajes.innerHTML = "";
                 messagesCache = {};
+                let lastMessageElement = null;
+
                 if (!snapshot.exists()) return;
+                
                 snapshot.forEach(childSnapshot => {
                     const id = childSnapshot.key;
                     const data = childSnapshot.val();
                     messagesCache[id] = data;
                     const msgWrapper = criarElementoMensagem(id, data);
                     chatMensajes.appendChild(msgWrapper);
+                    lastMessageElement = msgWrapper; // Guarda la referencia al último elemento
                 });
-                chatMensajes.scrollTop = chatMensajes.scrollHeight;
+
+                // **SOLUCIÓN DE SCROLL DEFINITIVA**
+                // Le dice al navegador que haga visible el último mensaje.
+                if (lastMessageElement) {
+                   setTimeout(() => {
+                        lastMessageElement.scrollIntoView({ behavior: "auto", block: "end" });
+                   }, 0);
+                }
             });
         }
         
@@ -145,7 +155,6 @@
             cancelReply();
         }
 
-        // --- Lógica de Responder e Reagir ---
         function setupMessageEventListeners() {
             let startX, startY, longPressTimer;
             chatMensajes.addEventListener('touchstart', (e) => {
@@ -221,7 +230,6 @@
             hideReactionPicker();
         }
         
-        // --- Funções de Utilidade ---
         function handleKeydown(event) {
             db.ref(`typing/${usuario}`).set(true);
             clearTimeout(typingTimeout);
