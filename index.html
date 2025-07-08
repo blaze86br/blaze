@@ -3,17 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blaze Apostas Online | Blaze Jogo | Crash & Double | Blaze</title>
-    
+    <title>Chat Privado</title>
     <link rel="icon" href="https://blaze.bet.br/favicon.ico" type="image/x-icon" />
-    <link rel="apple-touch-icon" href="https://blaze.bet.br/favicon.ico" />
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="style.css" />
@@ -28,104 +23,205 @@
     </div>
 
     <div class="container" id="chatContainer" style="display: none;">
-        <div class="chat-header">
-            <h2>E você chegou 🎵</h2>
-        </div>
+        <div class="chat-header"><h2>Partiu Porto Velho? ✈️</h2></div>
         <div class="chat-mensajes" id="chatMensajes"></div>
         <div id="typing-indicator"></div>
-        <div class="progress-bar" id="progressBar"><div class="progress" id="progress"></div></div>
-        <div class="chat">
+        <div class="chat-input-area">
+            <div id="replying-banner" class="replying-banner" style="display: none;">
+                <div id="reply-preview">
+                    <span id="cancel-reply-btn" onclick="cancelReply()">&times;</span>
+                    <div class="author" id="reply-author"></div>
+                    <div class="text" id="reply-text"></div>
+                </div>
+            </div>
+            <div class="progress-bar" id="progressBar"><div class="progress" id="progress"></div></div>
             <div class="chat-input-wrapper">
                 <input type="text" id="chatInput" placeholder="Escreva uma mensagem..." onkeydown="handleKeydown(event)">
                 <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadFoto(this)">
-                <button id="fotoBtn" class="action-btn" onclick="document.getElementById('fileInput').click()">
-                    <i class="fas fa-paperclip"></i>
-                </button>
-                <button id="enviarBtn" class="action-btn" onclick="enviarMensagem()">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+                <button class="action-btn" onclick="document.getElementById('fileInput').click()"><i class="fas fa-paperclip"></i></button>
+                <button class="action-btn" onclick="enviarMensagem()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
-
-    <div id="popupImagem" onclick="fecharPopup()">
-        <div id="popupConteudo" onclick="event.stopPropagation()">
-            <span id="fecharBtn" onclick="fecharPopup()">&times;</span>
-            <img id="popupImg" />
-        </div>
+    
+    <div id="reaction-picker">
+        <span onclick="addReaction('❤️')">❤️</span>
+        <span onclick="addReaction('😂')">😂</span>
+        <span onclick="addReaction('👍')">👍</span>
+        <span onclick="addReaction('😮')">😮</span>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDfBpJ-5DhknC9QRdSj8O1ShdJwBiL8284",
-            authDomain: "chat-ele-ela.firebaseapp.com",
-            projectId: "chat-ele-ela",
-            storageBucket: "chat-ele-ela.appspot.com",
-            messagingSenderId: "1019858101951",
-            appId: "1:1019858101951:web:5fba5a102d67d9009c880a"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyDfBpJ-5DhknC9QRdSj8O1ShdJwBiL8284", authDomain: "chat-ele-ela.firebaseapp.com", projectId: "chat-ele-ela", storageBucket: "chat-ele-ela.appspot.com", messagingSenderId: "1019858101951", appId: "1:1019858101951:web:5fba5a102d67d9009c880a" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const loginScreen = document.querySelector('.login-screen');
-        const chatContainer = document.getElementById('chatContainer');
-        const senhaInput = document.getElementById('senha');
-        const chatMensajes = document.getElementById('chatMensajes');
-        const chatInput = document.getElementById('chatInput');
-        const progressBar = document.getElementById('progressBar');
-        const progress = document.getElementById('progress');
-        const typingIndicator = document.getElementById('typing-indicator');
-        let usuario = "";
-        let otherUser = "";
-        let typingTimeout;
+        // --- Variáveis Globais ---
+        const loginScreen = document.querySelector('.login-screen'), chatContainer = document.getElementById('chatContainer'), senhaInput = document.getElementById('senha'), chatMensajes = document.getElementById('chatMensajes'), chatInput = document.getElementById('chatInput'), typingIndicator = document.getElementById('typing-indicator'), replyingBanner = document.getElementById('replying-banner'), reactionPicker = document.getElementById('reaction-picker'), progressBar = document.getElementById('progressBar'), progress = document.getElementById('progress');
+        let usuario = "", otherUser = "", typingTimeout;
+        let messagesCache = {};
+        let replyingTo = null;
+        let selectedMessageForReaction = null;
 
         function entrarNoChat() {
             const senha = senhaInput.value.trim();
             if (senha === "14141516") { usuario = "Ele"; otherUser = "Ela"; } 
             else if (senha === "170125") { usuario = "Ela"; otherUser = "Ele"; } 
-            else if (senha === "4444") { window.location.href = "https://blaze.com"; return; } 
             else { alert("Senha incorreta"); return; }
-
             loginScreen.style.display = "none";
             chatContainer.style.display = "flex";
             carregarMensagens();
             setupTypingListeners();
+            setupMessageEventListeners();
         }
 
         function carregarMensagens() {
             db.ref("mensagens").orderByChild("timestamp").on("value", snapshot => {
                 chatMensajes.innerHTML = "";
+                messagesCache = {};
                 if (!snapshot.exists()) return;
-
                 snapshot.forEach(childSnapshot => {
                     const id = childSnapshot.key;
                     const data = childSnapshot.val();
-                    const msg = criarElementoMensagem(id, data);
-                    chatMensajes.appendChild(msg);
+                    messagesCache[id] = data;
+                    const msgWrapper = criarElementoMensagem(id, data);
+                    chatMensajes.appendChild(msgWrapper);
                 });
-
-                // SCROLL CORRIGIDO: Se usa setTimeout para asegurar que el DOM se actualice antes de hacer scroll.
-                setTimeout(() => {
-                    chatMensajes.scrollTop = chatMensajes.scrollHeight;
-                }, 0);
+                chatMensajes.scrollTop = chatMensajes.scrollHeight;
             });
         }
         
         function criarElementoMensagem(id, data) {
-            const hora = new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const dataFormatada = new Date(data.timestamp).toLocaleDateString();
+            const wrapper = document.createElement("div");
+            wrapper.className = `mensagem-wrapper ${data.usuario === "Ele" ? 'ele' : 'ela'}`;
+            wrapper.dataset.id = id;
+
             const msg = document.createElement("div");
-            msg.className = `mensagem ${data.usuario === "Ele" ? 'ele' : 'ela'}`;
-            msg.dataset.id = id;
-            let contentHTML = data.imagemUrl 
-                ? `<img src="${data.imagemUrl}" onclick="abrirPopup('${data.imagemUrl}')">` 
-                : data.mensagem.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const reactionsHTML = data.reactions ? Object.entries(data.reactions).map(([e, c]) => `${e} ${c}`).join(' ') : '';
-            const reactionPickerHTML = `<div class="reaction-picker">...</div>`;
-            msg.innerHTML = `${contentHTML}<div class="hora">${dataFormatada} ${hora}</div>${reactionsHTML ? `<div class="reactions">${reactionsHTML}</div>` : ''}`;
-            return msg;
+            msg.className = "mensagem";
+            msg.classList.add(data.usuario === "Ele" ? 'ele' : 'ela');
+
+            let replyHTML = '';
+            if (data.replyContext) {
+                replyHTML = `<div class="reply-context">
+                    <div class="author">${data.replyContext.author}</div>
+                    <div class="text">${data.replyContext.text || 'Imagem'}</div>
+                </div>`;
+            }
+            
+            const contentHTML = data.imagemUrl ? `<img src="${data.imagemUrl}">` : data.mensagem.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const hora = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let reactionsHTML = '<div class="reactions-container">';
+            if (data.reactions) {
+                Object.entries(data.reactions).forEach(([emoji, count]) => {
+                    reactionsHTML += `<div class="reaction-chip">${emoji} ${count}</div>`;
+                });
+            }
+            reactionsHTML += '</div>';
+
+            msg.innerHTML = `${replyHTML}${contentHTML}<div class="hora">${hora}</div>${reactionsHTML}`;
+            wrapper.appendChild(msg);
+            return wrapper;
         }
 
+        function enviarMensagem() {
+            const texto = chatInput.value.trim();
+            if (texto === "") return;
+            const novaMensagem = {
+                usuario: usuario,
+                mensagem: texto,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            if (replyingTo) {
+                const originalMsg = messagesCache[replyingTo];
+                novaMensagem.replyContext = {
+                    messageId: replyingTo,
+                    author: originalMsg.usuario,
+                    text: originalMsg.mensagem || null
+                };
+            }
+            db.ref("mensagens").push(novaMensagem);
+            chatInput.value = "";
+            cancelReply();
+        }
+
+        // --- Lógica de Responder e Reagir ---
+        function setupMessageEventListeners() {
+            let startX, startY, longPressTimer;
+            chatMensajes.addEventListener('touchstart', (e) => {
+                const msgWrapper = e.target.closest('.mensagem-wrapper');
+                if (!msgWrapper) return;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                msgWrapper.style.transition = 'none';
+
+                longPressTimer = setTimeout(() => {
+                    showReactionPicker(msgWrapper, e.touches[0]);
+                    longPressTimer = null;
+                }, 500);
+            }, { passive: true });
+
+            chatMensajes.addEventListener('touchmove', (e) => {
+                if (longPressTimer) clearTimeout(longPressTimer);
+                const msgWrapper = e.target.closest('.mensagem-wrapper');
+                if (!msgWrapper || !startX) return;
+                const deltaX = e.touches[0].clientX - startX;
+                const deltaY = e.touches[0].clientY - startY;
+                if (Math.abs(deltaX) > Math.abs(deltaY) + 10) {
+                    if (deltaX > 0) msgWrapper.style.transform = `translateX(${deltaX}px)`;
+                }
+            }, { passive: true });
+
+            chatMensajes.addEventListener('touchend', (e) => {
+                if (longPressTimer) clearTimeout(longPressTimer);
+                const msgWrapper = e.target.closest('.mensagem-wrapper');
+                if (!msgWrapper) return;
+                const deltaX = parseFloat(msgWrapper.style.transform.replace('translateX(', '')) || 0;
+                msgWrapper.style.transition = 'transform 0.2s ease-out';
+                if (deltaX > 80) {
+                    startReply(msgWrapper.dataset.id);
+                }
+                msgWrapper.style.transform = 'translateX(0px)';
+            });
+        }
+
+        function startReply(messageId) {
+            replyingTo = messageId;
+            const originalMsg = messagesCache[messageId];
+            document.getElementById('reply-author').textContent = `Respondendo a ${originalMsg.usuario}`;
+            document.getElementById('reply-text').textContent = originalMsg.mensagem || 'Imagem';
+            replyingBanner.style.display = 'block';
+            chatInput.focus();
+        }
+
+        function cancelReply() {
+            replyingTo = null;
+            replyingBanner.style.display = 'none';
+        }
+
+        function showReactionPicker(msgWrapper, touchEvent) {
+            selectedMessageForReaction = msgWrapper.dataset.id;
+            document.body.appendChild(reactionPicker);
+            const rect = msgWrapper.querySelector('.mensagem').getBoundingClientRect();
+            reactionPicker.style.top = `${rect.top - reactionPicker.offsetHeight - 10}px`;
+            reactionPicker.style.left = `${touchEvent.clientX - reactionPicker.offsetWidth / 2}px`;
+            reactionPicker.classList.add('visible');
+            setTimeout(() => document.addEventListener('click', hideReactionPicker, { once: true }), 100);
+        }
+
+        function hideReactionPicker() {
+            reactionPicker.classList.remove('visible');
+            selectedMessageForReaction = null;
+        }
+
+        function addReaction(emoji) {
+            if (!selectedMessageForReaction) return;
+            const reactionRef = db.ref(`mensagens/${selectedMessageForReaction}/reactions/${emoji}`);
+            reactionRef.transaction(currentCount => (currentCount || 0) + 1);
+            hideReactionPicker();
+        }
+        
+        // --- Funções de Utilidade ---
         function handleKeydown(event) {
             db.ref(`typing/${usuario}`).set(true);
             clearTimeout(typingTimeout);
@@ -135,26 +231,13 @@
                 enviarMensagem();
             }
         }
-        
-        function enviarMensagem() {
-            const texto = chatInput.value.trim();
-            if (texto === "") return;
-            db.ref("mensagens").push({
-                usuario: usuario,
-                mensagem: texto,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-            chatInput.value = "";
-            db.ref(`typing/${usuario}`).set(false);
-            chatInput.focus();
-        }
-        
+
         function setupTypingListeners() {
             db.ref(`typing/${otherUser}`).on('value', s => {
                 typingIndicator.textContent = s.val() ? `${otherUser} está escrevendo...` : "";
             });
         }
-        
+
         function uploadFoto(input) {
             const file = input.files[0];
             if (!file) return;
@@ -165,33 +248,34 @@
             const xhr = new XMLHttpRequest();
             xhr.open("POST", "https://api.imgur.com/3/image");
             xhr.setRequestHeader("Authorization", "Client-ID 9c2d72d1a0c3b0b");
-            xhr.upload.onprogress = e => {
-                if (e.lengthComputable) progress.style.width = (e.loaded / e.total) * 100 + "%";
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percent = (event.loaded / event.total) * 100;
+                    progress.style.width = percent + "%";
+                }
             };
             xhr.onload = () => {
                 progressBar.style.display = 'none';
                 try {
-                    const res = JSON.parse(xhr.responseText);
-                    if (res.success) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
                         db.ref("mensagens").push({
                             usuario: usuario,
-                            imagemUrl: res.data.link,
+                            imagemUrl: response.data.link,
                             timestamp: firebase.database.ServerValue.TIMESTAMP
                         });
-                    } else { alert("Erro ao enviar imagem."); }
-                } catch (e) { alert("Erro no upload."); }
+                    } else { 
+                        alert("Erro ao enviar imagem.");
+                    }
+                } catch (e) { 
+                    alert("Ocorreu um erro inesperado no upload.");
+                }
             };
-            xhr.onerror = () => { progressBar.style.display = 'none'; alert("Erro de conexão."); };
+            xhr.onerror = () => {
+                progressBar.style.display = 'none';
+                alert("Erro de conexão com o Imgur.");
+            };
             xhr.send(formData);
-        }
-
-        function abrirPopup(url) {
-            document.getElementById('popupImg').src = url;
-            document.getElementById('popupImagem').style.display = 'flex';
-        }
-
-        function fecharPopup() {
-            document.getElementById('popupImagem').style.display = 'none';
         }
     </script>
 </body>
