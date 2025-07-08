@@ -3,317 +3,131 @@
 }
 body {
   margin: 0;
-  font-family: 'Poppins', sans-serif; /* Fonte mais moderna */
-  background-color: #121212; /* Fundo mais escuro */
+  font-family: 'Poppins', sans-serif;
+  background-color: #121212;
 }
+/* --- Login e gerais --- */
+.login-screen { width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(45deg, #1a1a1a, #2c2c2e, #1a1a1a); background-size: 400% 400%; animation: gradientBG 15s ease infinite; }
+@keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.login-box-blaze { background-color: rgba(20, 20, 20, 0.85); padding: 40px 30px; border-radius: 12px; width: 90%; max-width: 380px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37); text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+.login-box-blaze input { padding: 14px; width: 100%; background: #252525; border: 1px solid #444; border-radius: 8px; margin-bottom: 15px; font-size: 16px; color: white; transition: all 0.3s ease; }
+.login-box-blaze input:focus { outline: none; border-color: #e91e63; box-shadow: 0 0 10px rgba(233, 30, 99, 0.3); }
+.login-box-blaze button { width: 100%; padding: 14px; background-color: #e91e63; color: white; font-size: 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease; }
+.login-box-blaze button:hover { background-color: #c2185b; }
+.logo-blaze { width: 150px; margin-bottom: 30px; }
 
-/* Login com fundo animado */
-.login-screen {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(45deg, #1a1a1a, #2c2c2e, #1a1a1a);
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
-}
-
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.login-box-blaze {
-  background-color: rgba(20, 20, 20, 0.85);
-  padding: 40px 30px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 380px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-}
-.login-box-blaze input {
-  padding: 14px;
-  width: 100%;
-  background: #252525;
-  border: 1px solid #444;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  font-size: 16px;
-  color: white;
-  transition: all 0.3s ease;
-}
-.login-box-blaze input:focus {
-  outline: none;
-  border-color: #e91e63;
-  box-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
-}
-.login-box-blaze button {
-  width: 100%;
-  padding: 14px;
-  background-color: #e91e63;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-.login-box-blaze button:hover {
-  background-color: #c2185b;
-}
-.logo-blaze {
-  width: 150px;
-  margin-bottom: 30px;
-}
-
-/* Chat geral */
-.container {
-  background: #1e1e1e;
-  margin: 3% auto;
-  padding: 30px;
-  width: 90%;
-  max-width: 700px;
-  border-radius: 20px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  height: 94vh; /* Ocupa a maior parte da tela */
-}
-.chat-header h2 {
-    text-align:center;
-    color:#e91e63;
-    font-weight: 600;
-    margin-top: 0;
-    margin-bottom: 20px;
-    letter-spacing: 1px;
-}
-.chat-mensajes {
-  flex-grow: 1; /* Faz a área de mensagens ocupar o espaço disponível */
-  overflow-y: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  color: #fff;
-}
-
-/* --- Barra de scroll personalizada --- */
+/* --- Estrutura do Chat --- */
+.container { background: #1e1e1e; margin: 3% auto; padding: 30px; width: 90%; max-width: 700px; border-radius: 20px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; height: 94vh; }
+.chat-header h2 { text-align:center; color:#e91e63; font-weight: 600; margin-top: 0; margin-bottom: 20px; letter-spacing: 1px; }
+.chat-mensajes { flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 12px; color: #fff; }
 .chat-mensajes::-webkit-scrollbar { width: 6px; }
 .chat-mensajes::-webkit-scrollbar-track { background: transparent; }
 .chat-mensajes::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-.chat-mensajes::-webkit-scrollbar-thumb:hover { background: #555; }
+#typing-indicator { height: 20px; padding-left: 10px; font-style: italic; color: #999; font-size: 14px; }
+.chat-input-area { padding-top: 10px; }
+.chat-input-wrapper { display: flex; align-items: center; gap: 10px; }
+#chatInput { flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid #333; background-color: #2c2c2e; color: white; font-size: 16px; }
+.action-btn { background: #333; border: none; border-radius: 50%; width: 44px; height: 44px; color: #e91e63; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; flex-shrink: 0; }
+.action-btn:hover { background: #e91e63; color: white; transform: scale(1.1); }
+.action-btn i { line-height: 1; }
 
-.chat-input-wrapper {
+/* --- Mensagens --- */
+.mensagem-wrapper {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-top: 10px;
-}
-#chatInput {
-  flex: 1;
-  padding: 12px 15px;
-  border-radius: 20px;
-  border: 1px solid #333;
-  background-color: #2c2c2e;
-  color: white;
-  font-size: 16px;
-}
-#chatInput:focus {
-    outline: none;
-    border-color: #e91e63;
-}
-/* Estilo unificado para os botões de ação */
-.action-btn {
-  background: #333;
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  color: #e91e63;
-  font-size: 18px; /* Ícone um pouco menor para caber bem */
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  flex-shrink: 0; /* Impede que os botões encolham */
-}
-.action-btn:hover {
-    background: #e91e63;
-    color: white;
-    transform: scale(1.1);
-}
-.action-btn i {
-    line-height: 1; /* Garante alinhamento vertical do ícone */
-}
-
-.progress-bar {
-  margin-top: 10px;
-  height: 8px;
-  background: #333;
-  border-radius: 4px;
-  overflow: hidden;
-  display: none;
-}
-.progress {
-  height: 100%;
-  background: #e91e63;
-  width: 0;
-  transition: width 0.3s ease;
-  border-radius: 4px;
-}
-.hora {
-  font-size: 11px;
-  color: #aaa;
-  margin-top: 8px;
-  display: block;
-}
-.mensagem {
-  max-width: 80%;
-  padding: 12px 18px;
-  border-radius: 20px;
-  word-wrap: break-word;
+  width: 100%;
+  transition: transform 0.2s ease-out; /* Para o deslize */
   position: relative;
-  animation: popIn 0.3s ease-out;
-  line-height: 1.5;
 }
+.mensagem-wrapper.ele { justify-content: flex-start; }
+.mensagem-wrapper.ela { justify-content: flex-end; }
+.mensagem { max-width: 80%; padding: 10px 15px; border-radius: 20px; word-wrap: break-word; position: relative; line-height: 1.5; animation: popIn 0.3s ease-out; user-select: none; /* Impede seleção de texto ao deslizar */ }
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.mensagem.ele { background-color: #373739; border-top-left-radius: 5px; }
+.mensagem.ela { background-color: #581c37; border-top-right-radius: 5px; text-align: left; }
+.mensagem img { max-width: 250px; border-radius: 15px; cursor: pointer; margin-bottom: 5px; }
+.hora { font-size: 11px; color: #aaa; margin-top: 8px; display: block; text-align: right; }
 
-@keyframes popIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-.mensagem.ele {
-  background-color: #373739;
-  align-self: flex-start;
-  border-top-left-radius: 5px;
-}
-.mensagem.ela {
-  background-color: #581c37;
-  align-self: flex-end;
-  border-top-right-radius: 5px;
-  text-align: right;
-}
-.mensagem img {
-  max-width: 250px; /* Imagens maiores */
-  border-radius: 15px;
-  cursor: pointer;
-  margin-bottom: 5px;
-}
-#typing-indicator {
-    height: 20px;
-    padding-left: 10px;
-    font-style: italic;
-    color: #999;
+/* --- Respostas (Citar) --- */
+.reply-context {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-left: 3px solid #e91e63;
+    padding: 8px 10px;
+    margin: -2px -7px 8px -7px;
+    border-radius: 8px;
     font-size: 14px;
 }
-/* Reações */
-.reactions {
-    position: absolute;
-    bottom: -15px;
-    left: 10px;
+.reply-context .author { font-weight: 600; color: #e91e63; }
+.reply-context .text { color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.replying-banner {
     background: #2a2a2a;
-    border-radius: 15px;
-    padding: 2px 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    display: flex;
-    gap: 5px;
-    font-size: 12px;
+    padding: 5px 15px;
+    border-top: 1px solid #444;
+    font-size: 14px;
 }
-.mensagem.ela .reactions {
+#reply-preview {
+    background: #333;
+    padding: 8px;
+    border-radius: 8px;
+    border-left: 3px solid #e91e63;
+}
+#reply-preview .author { font-weight: 600; color: #e91e63; }
+#reply-preview .text { color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+#cancel-reply-btn { float: right; cursor: pointer; font-size: 20px; color: #aaa; }
+
+/* --- Reações com Emoji --- */
+.reactions-container {
+    position: absolute;
+    bottom: -10px;
+    left: 10px;
+    display: flex;
+    gap: 4px;
+}
+.mensagem-wrapper.ela .reactions-container {
     left: auto;
     right: 10px;
 }
-
-.reaction-picker {
+.reaction-chip {
+    background: #2a2a2a;
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+#reaction-picker {
     position: absolute;
-    top: -40px;
     display: flex;
-    gap: 8px;
+    gap: 10px;
     background: #3e3e3e;
-    padding: 8px;
+    padding: 8px 12px;
     border-radius: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    transform: translateY(-10px);
     opacity: 0;
     visibility: hidden;
     transition: all 0.2s ease;
-    cursor: pointer;
-    z-index: 10;
+    z-index: 100;
 }
-.mensagem:hover .reaction-picker {
+#reaction-picker.visible {
+    transform: translateY(0);
     opacity: 1;
     visibility: visible;
 }
-.reaction-picker span {
+#reaction-picker span {
+    font-size: 24px;
+    cursor: pointer;
     transition: transform 0.2s ease;
 }
-.reaction-picker span:hover {
+#reaction-picker span:hover {
     transform: scale(1.3);
 }
 
-/* Popup imagem */
-#popupImagem {
-  display: none; position: fixed; top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(5px);
-  z-index: 1000;
-  align-items: center; justify-content: center;
-  animation: fadeIn 0.3s ease;
-}
-#popupConteudo { position: relative; animation: scaleUp 0.3s ease; }
-#popupConteudo img { max-width: 90vw; max-height: 90vh; border-radius: 10px; }
-#fecharBtn {
-  position: absolute; top: 15px; right: 15px; font-size: 24px; color: white;
-  background: rgba(0,0,0,0.5); border-radius: 50%; width: 40px; height: 40px;
-  line-height: 40px; text-align: center; cursor: pointer; transition: transform 0.3s ease;
-}
-#fecharBtn:hover { transform: scale(1.1); }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-
 /* --- Otimização para Celulares --- */
 @media (max-width: 768px) {
-    body {
-        /* Remove o bounce do scroll no iOS */
-        -webkit-overflow-scrolling: touch;
-    }
-    .container {
-        width: 100%;
-        height: 100vh;
-        margin: 0;
-        padding: 15px;
-        border-radius: 0;
-    }
-    .chat-header h2 {
-        font-size: 20px;
-        margin-bottom: 15px;
-    }
-    .chat-mensajes {
-        padding: 5px;
-    }
-    .mensagem {
-        max-width: 85%;
-        padding: 10px 15px;
-        font-size: 15px;
-    }
-    .mensagem img {
-        max-width: 200px;
-    }
-    /* Esconde o reaction picker no hover em mobile (ativação por toque seria outra lógica) */
-    .reaction-picker {
-        display: none;
-    }
-    .login-box-blaze {
-        padding: 30px 20px;
-    }
+    body { -webkit-overflow-scrolling: touch; }
+    .container { width: 100%; height: 100vh; margin: 0; padding: 15px 15px 10px 15px; border-radius: 0; }
+    .chat-header h2 { font-size: 20px; margin-bottom: 15px; }
+    .chat-mensajes { padding: 5px; }
+    .mensagem { max-width: 85%; padding: 10px 15px; font-size: 15px; }
+    .mensagem img { max-width: 200px; }
+    #reaction-picker span { font-size: 28px; } /* Ícones maiores para toque */
 }
