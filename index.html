@@ -1,9 +1,9 @@
-voc<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blaze | Apostas online</title>
+    <title>Chat Privado</title>
     <link rel="icon" href="https://blaze.bet.br/favicon.ico" type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +23,7 @@ voc<!DOCTYPE html>
     </div>
 
     <div class="container" id="chatContainer" style="display: none;">
-        <div class="chat-header"><h2>E você chegou! 🎵</h2></div>
+        <div class="chat-header"><h2>Partiu Porto Velho? ✈️</h2></div>
         <div class="chat-mensajes" id="chatMensajes"></div>
         <div id="typing-indicator"></div>
         <div class="chat-input-area">
@@ -61,6 +61,7 @@ voc<!DOCTYPE html>
         let messagesCache = {};
         let replyingTo = null;
         let selectedMessageForReaction = null;
+        let initialLoad = true;
 
         function entrarNoChat() {
             const senha = senhaInput.value.trim();
@@ -74,33 +75,56 @@ voc<!DOCTYPE html>
             setupMessageEventListeners();
         }
 
+        // --- FUNCIÓN DE CARGA Y SCROLL REESCRITA ---
         function carregarMensagens() {
-            db.ref("mensagens").orderByChild("timestamp").on("value", snapshot => {
+            const mensagensRef = db.ref("mensagens").orderByChild("timestamp");
+
+            // Carga inicial de todos los mensajes
+            mensagensRef.once("value", snapshot => {
                 chatMensajes.innerHTML = "";
                 messagesCache = {};
-                let lastMessageElement = null;
-
-                if (!snapshot.exists()) return;
-                
+                if (!snapshot.exists()) {
+                    initialLoad = false;
+                    return;
+                };
                 snapshot.forEach(childSnapshot => {
                     const id = childSnapshot.key;
                     const data = childSnapshot.val();
                     messagesCache[id] = data;
                     const msgWrapper = criarElementoMensagem(id, data);
                     chatMensajes.appendChild(msgWrapper);
-                    lastMessageElement = msgWrapper; // Guarda la referencia al último elemento
                 });
+                scrollToBottom();
+                initialLoad = false;
 
-                // **SOLUCIÓN DE SCROLL DEFINITIVA**
-                // Le dice al navegador que haga visible el último mensaje.
-                if (lastMessageElement) {
-                   setTimeout(() => {
-                        lastMessageElement.scrollIntoView({ behavior: "auto", block: "end" });
-                   }, 0);
+                // Escucha solo los nuevos mensajes a partir de ahora
+                mensagensRef.startAt(Date.now()).on("child_added", newSnapshot => {
+                    if (initialLoad) return;
+                    const id = newSnapshot.key;
+                    const data = newSnapshot.val();
+                    messagesCache[id] = data;
+                    const msgWrapper = criarElementoMensagem(id, data);
+                    chatMensajes.appendChild(msgWrapper);
+                    scrollToBottom();
+                });
+            });
+
+            // Escucha cambios en las reacciones
+            db.ref("mensagens").on("child_changed", snapshot => {
+                const id = snapshot.key;
+                const data = snapshot.val();
+                const existingMsg = document.querySelector(`.mensagem-wrapper[data-id="${id}"]`);
+                if (existingMsg) {
+                    const updatedMsg = criarElementoMensagem(id, data);
+                    existingMsg.replaceWith(updatedMsg);
                 }
             });
         }
         
+        function scrollToBottom() {
+            chatMensajes.scrollTop = chatMensajes.scrollHeight;
+        }
+
         function criarElementoMensagem(id, data) {
             const wrapper = document.createElement("div");
             wrapper.className = `mensagem-wrapper ${data.usuario === "Ele" ? 'ele' : 'ela'}`;
